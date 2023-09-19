@@ -7,7 +7,7 @@ export const LoginButton = () => {
   return (
     <button
       style={{ marginRight: 10 }}
-      onClick={() => signIn()}
+    onClick={() => signIn()}
       className="bg-yellow-500 rounded p-4 w-full"
     >
       Entrar

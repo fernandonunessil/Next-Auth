@@ -11,8 +11,6 @@ import Image from "next/image";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-
-  console.log(session);
   return (
     <main className="">
       <div className="w-full max-w-xs">
