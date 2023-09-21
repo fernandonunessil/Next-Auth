@@ -1,9 +1,7 @@
-import { SessionProps } from './../types/lib/options';
+import { SessionProps } from "./../types/lib/options";
 import { Login } from "@/app/service/axios";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
-
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -13,31 +11,43 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Sign in",
       credentials: {
-        email: {
-          label: "Email",
-          type: "email",
-          placeholder: "example@example.com"
+        cnpj: {
+          label: "cnpj",
+          type: "text",
+          placeholder: "76.840.537/0003-93"
         },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        const res = await fetch("http://localhost:8082/login", {
+        if (!credentials?.cnpj && !credentials?.password) {
+          throw new Error("CNPJ e senha são obrigatórios");
+        }
+
+        const res = await fetch("http://localhost:8080/login", {
           method: "POST",
           headers: {
             "content-type": "application/json"
           },
           body: JSON.stringify({
-            email: credentials?.email,
+            cnpj: credentials?.cnpj,
             password: credentials?.password
           })
         });
 
         const user = await res.json();
 
-        console.log(user.user);
+        if (user) {
+          // Adicione dados extras ao objeto de usuário
+          const userWithExtras = {
+            cnpj: user.cnpj,
+            access_token: user.access_token,
+            name: user.name,
+            // Adicione dados extras aqui
+            role: "admin", // Por exemplo, você pode definir a função do usuário
+            someOtherData: "value" // Outros dados personalizados que você deseja adicionar
+          };
 
-        if (user.user) {
-          return user.user;
+          return userWithExtras;
         } else {
           return null;
         }
@@ -45,15 +55,14 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   pages: {
-    signIn: "/auth/signIn"
+    signIn: "/Login"
   },
   callbacks: {
-    async session({ session, token, user }: SessionProps) {
+    async session({ session, token, user }) {
+      session.accessToken = token.sub;
 
-      session.accessToken = token.accessToken;
-      
       console.log(session);
-      
+
       return session;
     },
     async jwt({ token, user, account, profile, isNewUser }) {
