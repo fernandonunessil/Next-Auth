@@ -10,7 +10,7 @@ export default function Login() {
       cnpj: email.current,
       password: pass.current,
       redirect: true,
-      callbackUrl: "/"
+      callbackUrl: "/userInfo"
     });
   };
   return (

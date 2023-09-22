@@ -39,12 +39,11 @@ export const authOptions: NextAuthOptions = {
         if (user) {
           // Adicione dados extras ao objeto de usuário
           const userWithExtras = {
-            cnpj: user.cnpj,
-            access_token: user.access_token,
-            name: user.name,
-            // Adicione dados extras aqui
-            role: "admin", // Por exemplo, você pode definir a função do usuário
-            someOtherData: "value" // Outros dados personalizados que você deseja adicionar
+            id: user.access_token,
+            user: {
+              name: user.name,
+              cnpj: user.cnpj
+            }
           };
 
           return userWithExtras;
@@ -59,20 +58,18 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async session({ session, token, user }) {
-      session.accessToken = token.sub;
+      if (!token.sub) {
+        throw new Error("Session invalid");
+      }
 
-      console.log(session);
-
-      return session;
+      return { ...session, accessToken: token.sub };
     },
-    async jwt({ token, user, account, profile, isNewUser }) {
-      if (user) {
-        token.id = user.id;
+    async jwt({ token, account }) {
+      if (token.sub) {
+        return token;
+      } else {
+        throw new Error("Usuario não authenticado");
       }
-      if (account) {
-        token.accessToken = account.access_token;
-      }
-      return token;
     }
   }
 };
